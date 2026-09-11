@@ -8,26 +8,31 @@ This workflow supports the system goal defined in `my_first_agent/README.md`.
 
 ### 1.2 Workflow Trigger
 
-[Describe the event, request, schedule, or condition that starts the workflow.]
+A student will submit a registration for the CPVC Hackathon
 
 ### 1.3 Completion Condition at Runtime
 
-[Describe how the system knows, on any given run, that this workflow is completed.]
+When a student has submitted their registration it should be recorded into the attendance and end state would be when the attendance is updated.
 
 ### 1.4 General Workflow
 
-[Describe the overall sequence of tasks in one or two paragraphs. Explain the normal path first, followed by the most important exception paths and human-review points.]
+When a student submits their Hackathon registration, the system will only record basic information like their name and asks one optional questions that is more personal. It will use the responses to forecast the likelihood of the person actually attending the event. By using the responses and the patterns of the individual. However, if the student doesn't answer the optional question regarding attendance then the system will use what it has. And organizers can review the system to accurately estimate the swag, food, drinks. The run ends when the attendance is updated 
 
 ### 1.5 Workflow Diagram
 
-[Insert a flowchart showing the tasks in sequence. Label each task with a task number and short name. Show decision branches, loops, review points, and possible stopping conditions. Below is an example of a Mermaid. You can either edit the mermaid below yourself or ask ChatGPT to generate a Mermaid script based on your workflow description above. Give every task a unique ID, such as T1, T2, and T3, and name tasks using a verb and an object in the mermaid.]
-
 ```mermaid
 flowchart TD
-    T1["T1: First task"] --> T2["T2: Second task"]
-    T2 --> D1{"Decision condition?"}
-    D1 -->|Yes| T3["T3: Next task"]
-    D1 -->|No| H1["Human review"]
-    H1 --> T3
-    T3 --> C1([C1: Completion state])
+    T1[Receive registration] --> T2[Record basic details] --> T3[Ask personal attendance question] 
+    T3 --> D1[Response given]
+    D1 -->|Yes| T4[Estimate likelihood of the attendance]
+    D1 -->|No| H1[Human Review]
+    H1 --> T5[Estimate from the responses given]
+    T4 --> T6[Record the likelihood of attendance]
+    T5 --> T6[Record the likelihood of attendance]
+    T6 --> T7[Update attendance]
+    T7 --> H1[Human Review]
+    H1 --> D2[Adjustments?]
+    D1 -->|Yes| T8[Adjust] 
+    D1 -->|No| C1[Completion] 
+    T8 --> C1[Completion]
 ```
