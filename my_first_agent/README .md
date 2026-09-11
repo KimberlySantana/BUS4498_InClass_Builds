@@ -7,16 +7,16 @@
 
 ### System Designer Name
 
-[Enter your name.]
+Kimberly Santana
 
 
 ### System Name
 
-[Use a default name "HackTrack" or enter the name you choose for the system.]
+HackTrack
 
 ### System Goal
-[Read Chapter 2 Section 2.1, then enter the well-structured goal of your agentic system]
+CPVC club will have an increase reliability accuracy in attendance so that they can prepare food, drinks, and swag to prepare. This will improve the 40% attendace to 75% attendance while collecting only basic non-private information basically respecting participants privacy and avoiding excessive communication.
 
 ### Who Is Better Off When This Works?
 
-[In one complete sentence, identify who will be better off when the system works.]
+CVPC organizers will have the benefit because they will have more control over the accuracy of the attendance and will be able to plan supplied efficiently.
