@@ -1,4 +1,4 @@
-# [Exact task name] Task Specification
+# Apply historical attendance estimate Task Specification
 
 *BUS 4498 Team Build Milestone 1. Create one copy for each L3 task. Save it in `our_team_agent/agent/task-specs/` in `BUS4498_Team_Build`. Use the task name in lowercase with hyphens between words; replace `&` with `and` and remove other punctuation.*
 
@@ -6,9 +6,9 @@
 
 ```yaml
 # BASIC INFORMATION
-task_id: "[Exact workflow task ID]"
-task_name: "[Exact workflow task name]"
-task_owner: "[Person or role accountable for this task]"
+task_id: "T5"
+task_name: "Apply historical attendance estimate"
+task_owner: "System agent"
 
 # Agent Inference Configuration
 Provider: [e.g., Groq, OpenAI, Claude, Google Gemini]
@@ -20,17 +20,27 @@ On inference failure or exhausted limits: Record the unresolved status and hand 
 
 ## 1. Task Goal
 
-- **Objective:** [What business result should this task produce?]
+- **Objective:** Estimate the likelihood that a registered student who has not responded to the attendance confirmation request will attend the Hackathon, so CPVC organizers can create a more accurate attendance estimate for food, drinks, and swag.
 
 ## 2. Inbound Inputs
 
-*Describe what the enclosing workflow must provide. Specify the structure of each input; do not invent customer, employee, or event data. Copy the Input block as needed.*
-
 ### Input 1
 
-- **Input name:** [Short name.]
-- **What it contains:** [Information the agent receives, including required fields and format.]
-- **Source:** [Task ID and name, person, or other permitted source.]
+- **Input name:** Registration record
+- **What it contains:** The student's basic registration information and registration dat
+- **Source:** T1: Record Registration
+
+### Input 2
+
+- **Input name:** Confirmation Response Status
+- **What it contains:** Whether the student responded to the confirmation request by the response deadline
+- **Source:** T2: Send Confirmation Request and D1: Did the student respond?
+
+### Input 3
+
+- **Input name:** Historical attendance information
+- **What it contains:** CPVC's previous registration to attendance rate, including the approximately 40% attendance rate from the prior event
+- **Source:** CPVC's past event attendance records
 
 ## 3. Tool Permissions and Boundaries
 
@@ -57,33 +67,43 @@ On inference failure or exhausted limits: Record the unresolved status and hand 
 
 ## 4. How the Agent Should Reason
 
-*Define permitted kinds of work rather than a fixed sequence. The agent selects its next subtask using intermediate findings and may skip, repeat, or combine permitted subtasks within Section 3's limits. Individual subtasks do not all have to be L3. Copy the Permitted Subtask block as needed.*
-
 ### Permitted Subtask 1
 
-- **Subtask name:** [Use a verb-object name.]
-- **Subtask description:** [What information does it examine and what finding or intermediate result does it produce?]
-- **Subtask boundary:** [What may and may not be done, including prerequisites and required approval?]
-- **Retry limits:** [Maximum additional attempts after the initial attempt; 0 means no retries. Repetition must also stay within Section 3's limits.]
+- **Subtask name:** Review registration record
+- **Subtask description:** Examine the student's basic registration information, registration date, and confirmation response status to identify whether the student did not respond.
+- **Subtask boundary:** The agent may use only the registration record and confirmation status provided as inputs; it may collect additional private information or contact the student.
+- **Retry limits:** One attempt; if required registration or response information is missing, hand the case to a CPVC organizer.
+
+### Permitted Subtask 2
+
+- **Subtask name:** Compare attendance evidence
+- **Subtask description:** Compare the nonresponse status with CPVC's historical attendance rate to produce an initial attendance likelihood estimate.
+- **Subtask boundary:** The agent may use approved historical attendance records only, it may not invent data or treat the estimate as a confirmed attendance decision
+- **Retry limits:** One attempt; if historical attendance information is unavailable or conflicting, flag case for human review. 
+
+### Permitted Subtask 3
+
+- **Subtask name:** Select next action
+- **Subtask description:** Use the registration review and attendance estimate to decide whether to record the estimate or flag an unusual case for organizer review
+- **Subtask boundary:** The agent may update the attendance likelihood record for request human review, it many not remove a student's registration, make final supply purchases, or send additional messages without organizer approval.
+- **Retry limits:** One attempt; if the evidence does not support a clear action, send the case to a CPVC organizer
 
 - **Decision guidance:** After each subtask, use its findings to select the permitted subtask most likely to resolve the most important remaining uncertainty. Do not follow a fixed sequence. If no permitted subtask can make useful progress, stop and hand the case to a person.
 
 ## 5. When to Stop or Hand Off to a Human
 
-- **Stop successfully when:** [What evidence shows that the required result is complete and acceptable? Confidence alone is not enough.]
-- **Hand off early when:** [What missing evidence, lack of progress, failure, or out-of-scope finding requires human review?]
-- **Hand off to:** [Specific person, role, or review queue.]
+- **Stop successfully when:** The agent has recorded an attendance likelihood estimate for the non-responsive student using the available registration, confirmation status, and approved historical attendance information.
+- **Hand off early when:** Required registration, response status, or historical attendance information is missing or conflicting, the case is unusual, or the agent cannot produce an estimate within its permitted one attempt.
+- **Hand off to:** The CPVC Event Planning Lead or to the CPVC organizer review queue
 
 Stop at the first applicable budget limit or handoff condition. While awaiting review, take no further autonomous action.
 
 ## 6. Outbound Deliverable
 
-*Revise these default items if your task needs a more specific deliverable, or retain them if they fit.*
-
 - **Status:** Completed or escalated to human.
-- **Result or recommendation:** The completed result. If escalated before reaching a supported result, write undetermined.
-- **Evidence summary:** The most important evidence supporting the result or explaining why no result could be reached.
+- **Result or recommendation:** The completed result. If escalated before reaching a supported result, write undetermined. The student's estimated attendance likelihood, such as high, moderate, or low.
+- **Evidence summary:** The registration status, confirmation response status, and relevant approved historical attendance information used for the estimate.
 - **Subtasks performed:** Permitted subtasks completed, including repeated attempts.
 - **Unresolved issues:** Remaining uncertainties or questions; use none only if no unresolved issue remains.
 - **Handoff note:** Reason for stopping, unresolved questions, and what the reviewer needs to decide; write "Not applicable" for a completed task.
-- **Next task or recipient:** Who receives the completed output? Unresolved cases go to the handoff recipient above.
+- **Next task or recipient:** T6:Update attendance estimate for completed cases; Unresolved cases go to the handoff recipient above.
