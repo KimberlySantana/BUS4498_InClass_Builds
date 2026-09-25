@@ -12,27 +12,30 @@ A student will submit a registration for the CPVC Hackathon
 
 ### 1.3 Completion Condition at Runtime
 
-When a student has submitted their registration it should be recorded into the attendance and end state would be when the attendance is updated.
+The workflow is complete when the student's valid registration has been recorded in the Hackathon attendance list and the student has received a registration confirmation. If the registration cannot be processed automatically, the workflow is complete when the system updates student's attendance staus or likelihood of attending in the attendance planning list
 
 ### 1.4 General Workflow
 
-When a student submits their Hackathon registration, the system will only record basic information like their name and asks one optional questions that is more personal. It will use the responses to forecast the likelihood of the person actually attending the event. By using the responses and the patterns of the individual. However, if the student doesn't answer the optional question regarding attendance then the system will use what it has. And organizers can review the system to accurately estimate the swag, food, drinks. The run ends when the attendance is updated 
+When a student submits the CPVC Hackathon registration form, the form will collect the student's basic registration information and check that all required fields are complete and valid. As the event approaches, the system sends one purposeful attendance confirmation message asking students whether they still plan to attend. If the student confirms attendance, the system will mark them as confirmed and update automatically the estimated attendance total. If student indicates they cannot attend, the system makes them as not attending and removes them from expected attendance total. If the student does not respond, the system keeps their status as no repsonse and uses the club's historical attendance rate to estimate whether they will attend. CPVC organizers can review unclear or unusual responses before final food, drink, and swag quantities are planned. 
 
 ### 1.5 Workflow Diagram
 
 ```mermaid
 flowchart TD
-    T1[Receive registration] --> T2[Record basic details] --> T3[Ask personal attendance question] 
-    T3 --> D1[Response given]
-    D1 -->|Yes| T4[Estimate likelihood of the attendance]
-    D1 -->|No| H1[Human Review]
-    H1 --> T5[Estimate from the responses given]
-    T4 --> T6[Record the likelihood of attendance]
-    T5 --> T6[Record the likelihood of attendance]
-    T6 --> T7[Update attendance]
-    T7 --> H1[Human Review]
-    H1 --> D2[Adjustments?]
-    D1 -->|Yes| T8[Adjust] 
-    D1 -->|No| C1[Completion] 
-    T8 --> C1[Completion]
-```
+    A[Student submits Hackathon registration] --> T1[T1: Record registration]
+    T1 --> T2[T2: Send confirmation request]
+    T2 --> D1{D1: Did student respond?}
+
+    D1 -->|Yes| D2{D2: Will student attend?}
+    D2 -->|Yes| T3[T3: Mark confirmed attendance]
+    D2 -->|No| T4[T4: Mark unlikely attendance]
+
+    D1 -->|No| T5[T5: Apply historical attendance estimate]
+    T5 --> D3{D3: Is organizer review needed?}
+    D3 -->|Yes| T7[T7: Review registration]
+    D3 -->|No| T6[T6: Update attendance estimate]
+    T7 --> T6
+
+    T3 --> T6
+    T4 --> T6
+    T6 --> C1[Completion]
