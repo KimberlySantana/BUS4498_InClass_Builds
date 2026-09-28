@@ -11,12 +11,11 @@ task_name: "Apply historical attendance estimate"
 task_owner: "System agent"
 
 # Agent Inference Configuration
-Provider: [e.g., Groq, OpenAI, Claude, Google Gemini]
-Model: "[Exact supported API model ID.]"
-Role: [permitted subtasks the model supports]
-Maximum inference requests per task run: "[Whole-number limit.]"
-On inference failure or exhausted limits: Record the unresolved status and hand the case to [human role].
-```
+Provider: OpenAI
+Model: gpt-5.6-luna
+Role: Role: Analyze nonresponse attendance evidence, estimate attendance likelihood, and recommend whether to update the estimate or hand off the case for CPVC organizer review.
+Maximum inference requests per task run: 6
+On inference failure or exhausted limits: Escalate the case to the CPVC Event Planning Lead or organizer review queue. Do not update the attendance estimate or take further autonomous action.
 
 ## 1. Task Goal
 
@@ -48,22 +47,50 @@ On inference failure or exhausted limits: Record the unresolved status and hand 
 
 ### Task-Wide Limits
 
-- **Total task timeout:** [Maximum elapsed time for one task run, with units; include tool calls, retries, and waiting.]
-- **Maximum tool calls:** [Maximum total calls across all tools during one task run; retries count toward this total.]
+- **Total task timeout:** 2 minutes, including all tool calls, retries, and waitings
+- **Maximum tool calls:** 4 total calls across all tools during one task run
 
 ### Tool 1
 
-- **Tool name:** [Proposed verb-object name, used consistently throughout the project.]
-- **Tool type:** [For example: Python script, pretrained model, API request, database query, or language-model call.]
-- **Supports these permitted subtasks:** [Names from Section 4.]
-- **Allowed use:** [What the tool may read, create, change, or send; identify permitted data sources and destinations.]
-- **Prohibited use:** [Actions, data, or destinations outside this tool's authority.]
-- **Approval required:** [What requires approval, who provides it, and when. Write "None within the allowed use" if applicable.]
-- **Timeout per call:** [Maximum duration of a single attempt, with units.]
-- **Maximum retries per call:** [Nonnegative whole number of additional attempts after the first; 0 means no retries.]
-- **Retry conditions and failure response:** [When a retry is allowed, any waiting interval, and what happens on timeout or exhausted retries. For actions that change state, avoid duplicate actions and hand off if the outcome is uncertain.]
+### Tool 1
 
+- **Tool name:** retrieve_registration_record
+- **Input:** Registration record
+- **Output:** Student registration details and registration date
+- **Implementation Route:** Database queries
+- **Integration approach:** Direct integration
+- **Role in this task:** Supports the 'Review registration record' subtask.
+- **Task timeout:** 30 seconds
+- **Maximum retries:** 1
+- **Retry only when:** The database connection or query fails before returning any record; retry once after 10 seconds. Do not retry if a record is returned but is incomplete.
+- **On timeout, exhausted retries, or an error that cannot be retried:** Record that the registration record is unavailable and escalate the case to the CPVC Event Planning Lead.
 *Copy the Tool block as needed. Tool-specific and task-wide limits both apply; stop at whichever is reached first. Naming a tool does not authorize uses outside its stated permissions.*
+
+### Tool 2
+
+- **Tool name:** retrieve_confirmation_status
+- **Input:** Confirmation-response status
+- **Output:** Student response status or no-response status
+- **Implementation Route:** Database queries
+- **Integration approach:** Direct integration
+- **Role in this task:** Supports the 'Review registration record' subtask.
+- **Task timeout:** 30 seconds
+- **Maximum retries:** 1
+- **Retry only when:** The database connection or query fails before returning a status; retry once after 10 seconds. Do not retry if the status is missing or unclear.
+- **On timeout, exhausted retries, or an error that cannot be retried:** Record that confirmation status is unavailable and escalate the case to the CPVC Event Planning Lead.
+
+### Tool 3
+
+- **Tool name:** retrieve_attendance_history
+- **Input:** Historical attendance information
+- **Output:** Approved past registration-to-attendance rate
+- **Implementation Route:** Database queries
+- **Integration approach:** Direct integration
+- **Role in this task:** Supports the 'Compare attendance evidence' subtask.
+- **Task timeout:** 30 seconds
+- **Maximum retries:** 1
+- **Retry only when:** The database connection or query fails before returning approved historical data; retry once after 10 seconds. Do not retry if the data is conflicting or unavailable.
+- **On timeout, exhausted retries, or an error that cannot be retried:** Record that historical-attendance information is unavailable and escalate the case to the CPVC Event Planning Lead.
 
 ## 4. How the Agent Should Reason
 
