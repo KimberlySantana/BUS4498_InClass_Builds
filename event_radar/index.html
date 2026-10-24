@@ -56,24 +56,32 @@
     </section>
   </main>
 
-  <details class="wrap card mod" id="moderator-panel">
-    <summary>Moderator sign-in</summary>
-    <div id="moderator-signed-out">
-      <p class="muted">Moderators can review posts that need a decision.</p>
-      <form id="sign-in-form">
-        <label for="moderator-email">Email</label>
-        <input id="moderator-email" type="email" autocomplete="username" required>
-        <label for="moderator-password">Password</label>
-        <input id="moderator-password" type="password" autocomplete="current-password" required>
-        <button id="sign-in-button" type="submit">Sign in</button>
-      </form>
-    </div>
-    <div id="moderator-signed-in" hidden>
-      <p id="moderator-status" class="muted" aria-live="polite">Signed in.</p>
-      <button id="sign-out-button" class="ghost" type="button">Sign out</button>
-      <ul id="waiting-board" class="board preview" aria-live="polite"></ul>
-    </div>
-  </details>
+  <div class="wrap">
+    <details class="card mod" id="moderator-panel">
+      <summary>Moderator sign-in</summary>
+      <div id="moderator-signed-out">
+        <p class="muted">Moderators can review posts that need a decision.</p>
+        <form id="sign-in-form" class="mod-form">
+          <div class="mod-field">
+            <label for="moderator-email">Email</label>
+            <input id="moderator-email" type="email" autocomplete="username" required>
+          </div>
+          <div class="mod-field">
+            <label for="moderator-password">Password</label>
+            <input id="moderator-password" type="password" autocomplete="current-password" required>
+          </div>
+          <button id="sign-in-button" type="submit">Sign in</button>
+        </form>
+      </div>
+      <div id="moderator-signed-in" hidden>
+        <div class="mod-toolbar">
+          <p id="moderator-status" class="muted" aria-live="polite">Signed in.</p>
+          <button id="sign-out-button" class="ghost" type="button">Sign out</button>
+        </div>
+        <ul id="waiting-board" class="board preview" aria-live="polite"></ul>
+      </div>
+    </details>
+  </div>
 
   <footer class="wrap foot">
     <p>Club Event Radar · BUS 4498 practice build</p>

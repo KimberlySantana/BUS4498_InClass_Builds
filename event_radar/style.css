@@ -140,3 +140,21 @@ button.ghost:hover { border-color: var(--accent); box-shadow: none; }
   .flyer { grid-column: 1 / -1; width: 100%; height: 190px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* ---------- moderator sign-in layout ---------- */
+.mod-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 0 12px;
+  align-items: end;
+}
+.mod-field label { margin-top: 0; }
+.mod-form input { min-width: 0; }
+.mod-form button { margin-top: 0; }
+.mod-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.mod-toolbar p { margin-bottom: 0; }
+@media (max-width: 560px) {
+  .mod-form { grid-template-columns: minmax(0, 1fr); }
+  .mod-form button { width: 100%; }
+  .mod-toolbar { align-items: flex-start; flex-direction: column; }
+}
