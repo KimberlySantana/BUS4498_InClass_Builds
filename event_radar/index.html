@@ -31,6 +31,10 @@
           <span class="hint">Include the date, start time, and campus place.</span>
         </label>
         <textarea id="announcement" name="announcement" maxlength="2000" required placeholder="Example: Board Game Guild: Game Night! Thursday, October 29, 7 to 10 pm in the University Union, Room 220."></textarea>
+        <label for="flyer">
+          Flyer photo <span class="hint">Optional JPG or PNG, up to 5 MB. Photo posts wait for a moderator.</span>
+        </label>
+        <input id="flyer" name="flyer" type="file" accept="image/jpeg,image/png">
         <button id="submit-button" type="submit">Send announcement</button>
       </form>
       <div id="result" class="result" hidden aria-live="polite"></div>

@@ -19,12 +19,14 @@
     "cost",
     "free_food",
     "summary",
+    "flyer_url",
   ].join(",");
 
   const board = document.getElementById("event-board");
   const boardStatus = document.getElementById("board-status");
   const form = document.getElementById("post-form");
   const announcement = document.getElementById("announcement");
+  const flyerInput = document.getElementById("flyer");
   const submitButton = document.getElementById("submit-button");
   const refreshButton = document.getElementById("refresh-button");
   const result = document.getElementById("result");
@@ -97,6 +99,15 @@
 
     item.appendChild(dateBox);
     item.appendChild(body);
+    const flyerPrefix = supabaseUrl + "/storage/v1/object/public/flyers/";
+    if (typeof event.flyer_url === "string" && event.flyer_url.startsWith(flyerPrefix)) {
+      const image = document.createElement("img");
+      image.className = "flyer";
+      image.src = event.flyer_url;
+      image.alt = event.title ? "Flyer for " + event.title : "Event flyer";
+      image.loading = "lazy";
+      item.appendChild(image);
+    }
     return item;
   }
 
@@ -183,6 +194,8 @@
     try {
       const body = new FormData();
       body.append("announcement", text);
+      const flyer = flyerInput.files && flyerInput.files[0];
+      if (flyer) body.append("flyer", flyer, flyer.name);
       const response = await fetch(agentUrl, {
         method: "POST",
         headers: { apikey: publishableKey },
