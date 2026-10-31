@@ -138,6 +138,10 @@ type AiCard = {
 type Submission = {
   announcement: string;
   flyer: File | null;
+  source: string;
+  sourceId: string;
+  sourceName: string;
+  thread: string[];
 };
 
 function jsonResponse(body: unknown, status = 200): Response {
@@ -431,6 +435,15 @@ function plainMessage(status: string): string {
   return "This event is already posted.";
 }
 
+function cleanThread(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((item): item is string => typeof item === "string")
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(-4);
+}
+
 async function getSubmission(request: Request): Promise<Submission> {
   const contentType = request.headers.get("content-type") ?? "";
   if (contentType.includes("application/json")) {
@@ -438,6 +451,10 @@ async function getSubmission(request: Request): Promise<Submission> {
     return {
       announcement: typeof body?.announcement === "string" ? body.announcement.trim() : "",
       flyer: null,
+      source: typeof body?.source === "string" ? body.source.trim() : "",
+      sourceId: typeof body?.source_id === "string" ? body.source_id.trim() : "",
+      sourceName: typeof body?.source_name === "string" ? body.source_name.trim() : "",
+      thread: cleanThread(body?.thread),
     };
   }
   const form = await request.formData();
@@ -446,6 +463,10 @@ async function getSubmission(request: Request): Promise<Submission> {
   return {
     announcement: typeof value === "string" ? value.trim() : "",
     flyer: flyerValue instanceof File && flyerValue.size > 0 ? flyerValue : null,
+    source: typeof form.get("source") === "string" ? String(form.get("source")).trim() : "",
+    sourceId: typeof form.get("source_id") === "string" ? String(form.get("source_id")).trim() : "",
+    sourceName: typeof form.get("source_name") === "string" ? String(form.get("source_name")).trim() : "",
+    thread: cleanThread(form.getAll("thread")),
   };
 }
 
@@ -509,6 +530,26 @@ Deno.serve(async (request: Request): Promise<Response> => {
     validateFlyer(submission.flyer);
 
     const supabase = getAdminClient();
+    if (submission.source && submission.sourceId) {
+      const { data: alreadyRead, error: duplicateCheckError } = await supabase
+        .from("events")
+        .select("id")
+        .eq("source", submission.source)
+        .eq("source_id", submission.sourceId)
+        .maybeSingle();
+      if (duplicateCheckError) throw new Error("The database could not check whether this chat message was already read.");
+      if (alreadyRead) {
+        return jsonResponse({
+          ok: true,
+          status: "duplicate",
+          message: "This chat message was already read.",
+          reasons: [],
+          event: null,
+          already_read: true,
+        });
+      }
+    }
+
     const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const { count, error: countError } = await supabase
       .from("events")
@@ -551,6 +592,9 @@ Deno.serve(async (request: Request): Promise<Response> => {
       dedupe_key: decision.dedupeKey,
       ai_model: MODEL,
       flyer_url: flyerUrl,
+      source: submission.source,
+      source_id: submission.sourceId,
+      source_name: submission.sourceName,
     };
 
     const { data: inserted, error: insertError } = await supabase
@@ -563,12 +607,16 @@ Deno.serve(async (request: Request): Promise<Response> => {
       await removeFlyer(supabase, flyerPath);
     }
     if (insertError?.code === "23505") {
+      const alreadyRead = Boolean(submission.source && submission.sourceId);
       return jsonResponse({
         ok: true,
         status: "duplicate",
-        message: plainMessage("duplicate"),
-        reasons: ["A post with the same date, start time, and place is already live."],
+        message: alreadyRead ? "This chat message was already read." : plainMessage("duplicate"),
+        reasons: alreadyRead
+          ? []
+          : ["A post with the same date, start time, and place is already live."],
         event: null,
+        ...(alreadyRead ? { already_read: true } : {}),
       });
     }
     if (insertError) throw new Error("The database could not save this event.");
